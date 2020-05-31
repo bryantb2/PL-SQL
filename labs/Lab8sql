@@ -1,0 +1,341 @@
+drop table purchaser cascade constraints;
+drop table tax_codes cascade constraints;
+
+create table purchaser
+(purchaser_id       number  PRIMARY KEY,
+purchaser_first_name	varchar2(30),
+purchaser_last_name	varchar2(30),
+address_line1       varchar2(30),
+address_line2       varchar2(30),
+city                varchar2(30),
+state_code          varchar2(2),
+zip_code            varchar2(9));
+
+insert into purchaser values
+(10,'Pamela','Farr','123 Main Street',NULL,'Lake Oswego','OR','974012346');
+insert into purchaser values
+(20,'Constance','Connors','222 Blossom Street',NULL,'Fitchburg','MA','012402203');
+insert into purchaser values
+(30,'Andrew','Wolfe','805 Olive Avenue',NULL,'Phoenix','AZ','873458034');
+insert into purchaser values
+(40,'Warren','Mansur','8015 28th Avenue',NULL,'Seattle','WA','981153456');
+insert into purchaser values
+(50,'Russell','Murphy','4046 E. 94th Street',NULL,'Tulsa','OK','733474046');
+
+drop table product cascade constraints;
+
+create table product
+(product_id         number  PRIMARY KEY,
+product_name        varchar2(30),
+product_price       number(8,2),
+product_cost        number(8,2),
+product_amount		number,
+fk_inventory_id     number);
+
+insert into product values
+(100,'History of Buckfast Abbey',15.00,10.00,25,1);
+insert into product values
+(200,'Cinnamon Candle',5.00,3.00,35,1);
+insert into product values
+(300,'Bible',10.00,5.00,45,1);
+insert into product values
+(400,'Strawberry Jam',5.00,3.00,15,2);
+insert into product values
+(500,'Decorative Cross',12.00,6.00,10,2);
+insert into product values
+(600,'Buckfast Abbey Tote Bag',10.00,5.00,45,2);
+insert into product values
+(700,'Rosary',4.00,2.00,50,3);
+insert into product values
+(800,'T-Shirt',15.00,8.00,60,3);
+insert into product values
+(900,'Hoodie',20.00,10.00,25,3);
+insert into product values
+(110,'Place Mats Set of 4',20.00,10.00,20,1);
+insert into product values
+(120,'A Monks Life',15.00,10.00,20,2);
+insert into product values
+(130,'Apple Butter',5.00,3.00,25,2);
+
+drop table inventory cascade constraints;
+
+create table inventory
+(inventory_id       number  PRIMARY KEY,
+inventory_name      varchar2(30));
+
+insert into inventory values
+(1,'Gift Shop');
+insert into inventory values
+(2,'Religious Shop');
+insert into inventory values
+(3,'Book Store');
+
+alter table product add constraint fk_inventory
+FOREIGN KEY (fk_inventory_id)
+references inventory (inventory_id);
+
+drop table purchase cascade constraints;
+
+create table purchase
+(purchase_id        number,
+fk_purchaser_id        number,
+purchase_date       date,
+total_purchase      number(8,2));
+
+alter table purchase add constraint fk_purchaser
+FOREIGN KEY (fk_purchaser_id)
+references purchaser(purchaser_id);
+
+insert into purchase values
+(1000,10,SYSDATE,NULL);
+insert into purchase values
+(2000,10,SYSDATE,NULL);
+insert into purchase values
+(3000,20,SYSDATE,NULL);
+insert into purchase values
+(4000,20,SYSDATE,NULL);
+insert into purchase values
+(5000,30,SYSDATE,NULL);
+insert into purchase values
+(6000,40,SYSDATE,NULL);
+insert into purchase values
+(7000,50,SYSDATE,NULL);
+insert into purchase values
+(8000,50,SYSDATE,NULL);
+insert into purchase values
+(9000,30,SYSDATE,NULL);
+insert into purchase values
+(1010,30,SYSDATE,NULL);
+
+drop table line_item cascade constraints;
+
+create table line_item
+(line_item_id       number,
+fk_purchase_id      number,
+fk_product_id       number,
+number_purchased    number);
+
+insert into line_item values
+(1,1000,100,1);
+insert into line_item values
+(2,1000,200,2);
+insert into line_item values
+(3,1000,300,1);
+
+insert into line_item values
+(1,2000,400,3);
+insert into line_item values
+(2,2000,500,2);
+insert into line_item values
+(3,2000,600,1);
+insert into line_item values
+(4,2000,700,2);
+
+insert into line_item values (1,3000,800,1);
+insert into line_item values
+(2,3000,900,1);
+
+
+insert into line_item values(1,4000,110,1);
+insert into line_item values
+(2,4000,120,1);
+insert into line_item values
+(3,4000,130,1);
+insert into line_item values
+(4,4000,100,1);
+
+insert into line_item values (1,5000,200,2);
+insert into line_item values
+(1,6000,300,1);
+insert into line_item values
+(2,6000,400,1);
+insert into line_item values
+(1,7000,500,1);
+insert into line_item values
+(2,7000,600,2);
+insert into line_item values
+(3,7000,700,2);
+insert into line_item values
+(1,8000,800,1);
+insert into line_item values
+(2,8000,900,1);
+insert into line_item values
+(3,8000,110,1);
+insert into line_item values
+(4,8000,120,1);
+insert into line_item values
+(5,8000,130,1);
+insert into line_item values
+(1,9000,100,1);
+insert into line_item values
+(2,9000,200,2);
+insert into line_item values
+(1,1010,300,2);
+insert into line_item values
+(2,1010,400,2);
+insert into line_item values
+(3,1010,500,2);
+
+create table tax_codes
+(state_code	varchar2(2),
+tax_rate	float);
+
+insert into tax_codes values
+('WA',.11);
+insert into tax_codes values
+('OR',.15);
+insert into tax_codes values
+('MA',.12);
+insert into tax_codes values
+('AZ',.09);
+insert into tax_codes values
+('OK',.05);
+
+
+-- PROBLEM 1
+CREATE OR REPLACE FUNCTION GET_PURCHASER_DATA
+(PURCHASE_ID_ARG VARCHAR2)
+RETURN PURCHASER%ROWTYPE
+IS
+  PURCHASER_DATA PURCHASER%ROWTYPE;
+BEGIN
+  -- GET DATA FROM DB
+  SELECT *
+    INTO PURCHASER_DATA
+    FROM PURCHASER
+    WHERE PURCHASER.PURCHASER_ID = PURCHASE_ID_ARG;
+  -- RETURN DATA  
+  RETURN PURCHASER_DATA;
+END;
+
+set feedback on;
+set serveroutput on;
+DECLARE
+  PURCHASER_ID VARCHAR2(10) := '10';
+  PURCHASER_DATA PURCHASER%ROWTYPE;
+BEGIN
+  PURCHASER_DATA := GET_PURCHASER_DATA('10');
+  DBMS_OUTPUT.PUT_LINE('Purchaser id: ' || PURCHASER_DATA.PURCHASER_ID);
+  DBMS_OUTPUT.PUT_LINE('Purchaser first name: ' || PURCHASER_DATA.PURCHASER_FIRST_NAME);
+  DBMS_OUTPUT.PUT_LINE('Purchaser last name: ' || PURCHASER_DATA.PURCHASER_LAST_NAME);
+  DBMS_OUTPUT.PUT_LINE('Purchaser address 1: ' || PURCHASER_DATA.ADDRESS_LINE1);
+  DBMS_OUTPUT.PUT_LINE('Purchaser address 2: ' || PURCHASER_DATA.ADDRESS_LINE2);
+  DBMS_OUTPUT.PUT_LINE('Purchaser city: ' || PURCHASER_DATA.CITY);
+  DBMS_OUTPUT.PUT_LINE('Purchaser state code: ' || PURCHASER_DATA.STATE_CODE);
+  DBMS_OUTPUT.PUT_LINE('Purchaser zip code: ' || PURCHASER_DATA.ZIP_CODE);
+END;
+
+
+-- PROBLEM 2
+select * from tax_codes;
+
+CREATE OR REPLACE FUNCTION GET_STATE_TAX_CODE
+(STATE_ABRV_ARG IN VARCHAR2)
+RETURN NUMBER
+IS
+  CURSOR STATE_CUR IS
+    SELECT * FROM TAX_CODES;
+BEGIN
+  -- check and return tax rate
+  FOR STATE_REC IN STATE_CUR
+  LOOP
+    IF (STATE_REC.STATE_CODE = STATE_ABRV_ARG) THEN
+      RETURN STATE_REC.TAX_RATE * 100;
+    END IF;
+  END LOOP;
+  RETURN 0;
+END;
+
+DECLARE
+  STATE_CODE VARCHAR2(2) := 'OR';
+  TAX_CODE NUMBER;
+BEGIN
+  TAX_CODE := GET_STATE_TAX_CODE(STATE_CODE);
+  DBMS_OUTPUT.PUT_LINE('Tax code for state ' || STATE_CODE || ' is: %' || TAX_CODE );
+END;
+
+
+-- PROBLEM 4
+CREATE OR REPLACE FUNCTION CALC_PURCHASER_COST
+(PURCHASER_ID_ARG IN VARCHAR2,
+PRODUCT_ID_ARG    IN VARCHAR2,
+PRODUCT_QNT_ARG   IN VARCHAR2)
+RETURN NUMBER
+IS
+  PRODUCT_AMT NUMBER;
+  TAX_RATE_AS_DECIMAL NUMBER;
+BEGIN
+  -- GET TAX RATE
+  SELECT TAX_CODES.TAX_RATE
+    INTO TAX_RATE_AS_DECIMAL
+    FROM PURCHASER
+    JOIN TAX_CODES ON TAX_CODES.STATE_CODE = PURCHASER.STATE_CODE
+    WHERE PURCHASER.PURCHASER_ID = PURCHASER_ID_ARG; 
+  -- GET PRODUCT COST
+  SELECT PRODUCT.PRODUCT_PRICE 
+    INTO PRODUCT_AMT
+    FROM PRODUCT
+    WHERE PRODUCT.PRODUCT_ID = PRODUCT_ID_ARG;
+  -- CALCULATE TOTAL COST
+  RETURN PRODUCT_AMT * PRODUCT_QNT_ARG * (1 + TAX_RATE_AS_DECIMAL);
+END;
+
+-- PROBLEM 5
+CREATE OR REPLACE FUNCTION GET_PRODUCT_NAME
+(PRODUCT_ID_ARG IN VARCHAR2)
+RETURN VARCHAR2
+IS 
+  PRODUCT_NAME VARCHAR2(30);
+BEGIN
+  -- GET DATA
+  SELECT PRODUCT.PRODUCT_NAME
+    INTO PRODUCT_NAME
+    FROM PRODUCT
+    WHERE PRODUCT.PRODUCT_ID = PRODUCT_ID_ARG;
+  RETURN PRODUCT_NAME;
+END;
+
+
+-- PROBLEM 6
+CREATE OR REPLACE PROCEDURE RECORD_PURCHASE_AND_UPDATE_DB
+(PURCHASER_ID_ARG IN VARCHAR2,
+PRODUCT_ID_ARG IN VARCHAR2,
+PURCHASE_QNT_ARG IN VARCHAR2)
+IS
+  PURCHASER_DATA PURCHASER%ROWTYPE;
+  CURRENT_QUANTITY NUMBER;
+  TOTAL_COST NUMBER;
+  PRODUCT_NAME VARCHAR2(50);
+BEGIN
+  -- GET CURRENT PRODUCT QUANTITY
+  SELECT PRODUCT.PRODUCT_AMOUNT
+    INTO CURRENT_QUANTITY
+    FROM PRODUCT
+    WHERE PRODUCT.PRODUCT_ID = PRODUCT_ID_ARG;
+  -- GET TOTAL COST, PRODUCT NAME, AND PURCHASER DATA
+  PURCHASER_DATA := GET_PURCHASER_DATA(PURCHASER_ID_ARG);
+  TOTAL_COST   := CALC_PURCHASER_COST(PURCHASER_ID_ARG, PRODUCT_ID_ARG, PURCHASE_QNT_ARG);
+  PRODUCT_NAME := GET_PRODUCT_NAME(PRODUCT_ID_ARG);
+  -- UPDATE PRODUCT QUANTITY
+  UPDATE PRODUCT
+    SET PRODUCT_AMOUNT = CURRENT_QUANTITY - PURCHASE_QNT_ARG
+    WHERE PRODUCT.PRODUCT_ID = PRODUCT_ID_ARG;
+  -- PRINT RESULTS  
+  DBMS_OUTPUT.PUT_LINE('Purchaser ' || PURCHASER_DATA.PURCHASER_FIRST_NAME || ' ' || PURCHASER_DATA.PURCHASER_LAST_NAME ||
+    'with ID of ' || PURCHASER_ID_ARG);
+  DBMS_OUTPUT.PUT_LINE('Bought ' || PURCHASE_QNT_ARG || ' '  || PRODUCT_NAME || ' for a total of $' || TOTAL_COST);
+END;
+
+-- TESTING ALL CODE
+SELECT * FROM PRODUCT;
+BEGIN
+  RECORD_PURCHASE_AND_UPDATE_DB(30, 400, 4);
+END;
+
+
+
+
+
+
+
+
